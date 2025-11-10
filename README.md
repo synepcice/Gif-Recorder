@@ -16,7 +16,7 @@ Vous pouvez aussi cliquer sur l'icone de l'œil (si vous l'avez affiché depuis 
 mais la fenetre de gestion de projet ne s'ouvrira pas (plus rapide en plein jeu par exemple).
 Vous pourrez acceder malgré tout à cette fenetre de projet depuis le menu TrayIcon.
 
-![GifProjets](Images/GifProjets.jpg)
+![GifProjets](Images/GestionProjets.jpg)
 
 Dans cette fenetre de gestion de projet , vous pouvez Selectionner une des captures précédentes ou les supprimer.
 Si vous clickez sur un des projets , Gif Editor se charge …
