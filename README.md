@@ -38,19 +38,30 @@ Vous voyez un curseur de TimeLine pour vous déplacer dans le temps …
 ![GifEditor](Images/GifEditor.jpg)
 
 Undo : Annuler la derniere action
-Redo : Rétablire la derniere action
-Crayon : permet de rajouter une annotation qui apparaitra pendant 1 seconde à partir de l'instant où vous vous trouvez dans la TimeLine. (Vous pouvez mettre plusieurs annotations différentes)
-Texte : Pour ajouter du texte (qui apparaitra aussi pendant 1 seconde à partir de l'instant choisis). Le texte est posé en haut à droite du curseur croix précisément.
-Taille de Texte : Définir la taille du texte
-Couleur : Choisir la couleur du Crayon ou du Texte.
-Crop : Définir une zone de selection de l'image
-Duplicate Image : Dupliquer l'image sur laquelle vous êtes (Parfait pour faire une pause)
-Suppr Image : Supprimer l'image sur laquelle vous êtes
-SlowMo : Ralenti progressivement la séquence jusqu'à l'image où vous êtes puis accélère progressivement la séquence pour un effet "Whaou". Idéal pour marquer une notif plus spécifiquement
-Couper le Debut : Supprimer les 3 premières images (répétable à volonté)
-Couper la fin : Supprimer les 3 dernières images (répétable à volonté)
-Valider : permet de confirmer les modifications que vous avez faites sur ce GIF.
 
+Redo : Rétablire la derniere action
+
+Crayon : permet de rajouter une annotation qui apparaitra pendant 1 seconde à partir de l'instant où vous vous trouvez dans la TimeLine. (Vous pouvez mettre plusieurs annotations différentes)
+
+Texte : Pour ajouter du texte (qui apparaitra aussi pendant 1 seconde à partir de l'instant choisis). Le texte est posé en haut à droite du curseur croix précisément.
+
+Taille de Texte : Définir la taille du texte
+
+Couleur : Choisir la couleur du Crayon ou du Texte.
+
+Crop : Définir une zone de selection de l'image
+
+Duplicate Image : Dupliquer l'image sur laquelle vous êtes (Parfait pour faire une pause)
+
+Suppr Image : Supprimer l'image sur laquelle vous êtes
+
+SlowMo : Ralenti progressivement la séquence jusqu'à l'image où vous êtes puis accélère progressivement la séquence pour un effet "Whaou". Idéal pour marquer une notif plus spécifiquement
+
+Couper le Debut : Supprimer les 3 premières images (répétable à volonté)
+
+Couper la fin : Supprimer les 3 dernières images (répétable à volonté)
+
+Valider : permet de confirmer les modifications que vous avez faites sur ce GIF.
 A ce moment là , il vous propose soit de garder la version originale , soit de le compresser (légèrement altéré pour 35% d'économie de place).
 
 Vous pouvez Maintenant faire Coller où vous voulez.
@@ -65,3 +76,8 @@ Voilà ! En espérant que ce petit logiciel vous apporte plein d'amour !
 
 Information pour les développeurs :
 Attention, GIF Recorder ne fonctionne que sous Windows. Impossible de le recompiler à partir des Sources pour Linux ou Android car il utilise des Bibliothèques DLL propres à Microsoft (Python_DXCam).
+
+
+Si vous appréciez mon application , et si vous pensez que ca en vaut la peine , n'hesitez pas à laisser un petit pourboire pour me soutenir !
+ [Soutenir le projet sur PayPal](https://paypal.me/synepcice)
+
