@@ -1,0 +1,18 @@
+{
+    "record_duration": 20,
+    "monitor_index": 0,
+    "capture_mode": "replay",
+    "autowatch_rules": [
+        {
+            "exe": "C:/Windows/notepad.exe",
+            "trigger": "[KPM > 100]",
+            "cooldown": 1,
+            "before_seconds": 4,
+            "after_seconds": 6,
+            "kpm_threshold": 108
+        }
+    ],
+    "shortcut_window_x": 930,
+    "shortcut_window_y": 1421,
+    "projects_path": "D:/GifRecProject"
+}

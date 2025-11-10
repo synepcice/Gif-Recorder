@@ -1,0 +1,10 @@
+customtkinter
+Pillow
+pystray
+pyperclip
+pywin32
+dxcam
+imageio
+numpy
+psutil
+pynput
