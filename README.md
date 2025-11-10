@@ -16,6 +16,8 @@ Vous pouvez aussi cliquer sur l'icone de l'œil (si vous l'avez affiché depuis 
 mais la fenetre de gestion de projet ne s'ouvrira pas (plus rapide en plein jeu par exemple).
 Vous pourrez acceder malgré tout à cette fenetre de projet depuis le menu TrayIcon.
 
+![GifProjets](images/GifProjets.jpg)
+
 Dans cette fenetre de gestion de projet , vous pouvez Selectionner une des captures précédentes ou les supprimer.
 Si vous clickez sur un des projets , Gif Editor se charge …
 
@@ -26,11 +28,14 @@ Si vous faites ainsi , lorsque vous lancez le logiciel correspondant , GifRec at
 Soit une touche de clavier , soit de la souris , soit une exitation de votre activité Clavier/Souris (appelé Key Per Minutes) , au dessus d'un seuil tel que 100 Kpm , 200 Kpm…
 Vous devrez également choisir un temps minimum entre deux captures effectués par cette méthode.
 
+![AutoWatch](images/AutoWatch.jpg)
 
 # Menu GIF EDITOR
 
 Vous voyez : UNDO / REDO / CRAYON / TEXT / TAILLE DE TEXTE / COULEUR / CROP / DUPLICATE IMAGE / SUPPR IMAGE / SLOW MOTION / COUPER DEBUT / COUPER FIN / VALIDER
 Vous voyez un curseur de TimeLine pour vous déplacer dans le temps …
+
+![GifEditor](images/GifEditor.jpg)
 
 Undo : Annuler la derniere action
 Redo : Rétablire la derniere action
