@@ -61,8 +61,10 @@ Couper le Debut : Supprimer les 3 premières images (répétable à volonté)
 
 Couper la fin : Supprimer les 3 dernières images (répétable à volonté)
 
-Valider : permet de confirmer les modifications que vous avez faites sur ce GIF.
+Valider GIF : permet de confirmer les modifications que vous avez faites au format Gif.
 A ce moment là , il vous propose soit de garder la version originale , soit de le compresser (légèrement altéré pour 35% d'économie de place).
+
+Valider WebM : permet de confirmer les modifications que vous avez faites au format WebM (Compatible avec moins d'elements , mais plus légé).
 
 Vous pouvez Maintenant faire Coller où vous voulez.
 Soit dans une fenêtre de conversation Sociale (Facebook / Instagram … etc , pour un Maximum de 100 mo , vérifiez dans la fenetre de Validation d'abord)
