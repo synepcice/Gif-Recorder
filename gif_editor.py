@@ -152,9 +152,19 @@ class GifEditorApp:
                 self.icons[name] = None # Placeholder
 
         # --- Right side buttons ---
-        validate_btn = tk.Button(self.button_frame, image=self.icons.get("validate"), relief=tk.FLAT, bg="#2E2E2E", command=self.validate_changes)
-        validate_btn.pack(side=tk.RIGHT, padx=5)
-        Tooltip(validate_btn, "Valider le Gif")
+        # Container for export buttons
+        export_frame = tk.Frame(self.button_frame, bg="#2E2E2E")
+        export_frame.pack(side=tk.RIGHT, padx=5)
+
+        # WebM Button
+        webm_btn = tk.Button(export_frame, text="WebM", image=self.icons.get("validate"), compound=tk.LEFT, relief=tk.FLAT, bg="#2E2E2E", fg="white", command=self.export_as_webm)
+        webm_btn.pack(side=tk.RIGHT, padx=2)
+        Tooltip(webm_btn, "Valider en WebM (Plus léger)")
+
+        # GIF Button (formerly Validate)
+        gif_btn = tk.Button(export_frame, text="GIF", image=self.icons.get("validate"), compound=tk.LEFT, relief=tk.FLAT, bg="#2E2E2E", fg="white", command=self.export_as_gif)
+        gif_btn.pack(side=tk.RIGHT, padx=2)
+        Tooltip(gif_btn, "Valider en GIF")
 
         # --- Left side buttons ---
         self.undo_button = tk.Button(self.button_frame, image=self.icons.get("undo"), relief=tk.FLAT, bg="#2E2E2E", command=self.undo, state=tk.DISABLED)
@@ -700,30 +710,29 @@ class GifEditorApp:
         size_dialog.bind("<Return>", lambda e: on_ok())
         size_dialog.bind("<Escape>", lambda e: size_dialog.destroy())
 
-    def validate_changes(self):
-        if not self.gif_frames or not self.original_gif_path: return
+    def _prepare_frames_for_export(self, title="Export en cours..."):
+        if not self.gif_frames or not self.original_gif_path: return None, None
 
         progress_win = tk.Toplevel(self.master)
         progress_win.geometry("+5000+5000") # Move off-screen during setup
         progress_win.update_idletasks()
-        progress_win.title("Validation en cours...")
+        progress_win.title(title)
         progress_win.config(bg="#2E2E2E")
         set_dark_title_bar(progress_win)
         progress_win.transient(self.master)
         progress_win.grab_set()
-        x, y = self.master.winfo_x() + (self.master.winfo_width() // 2) - 150, self.master.winfo_y() + (self.master.winfo_height() // 2) - 50
-        progress_win.geometry(f"300x100+{x}+{y}")
-        progress_win.deiconify() # Show configured window
+        
+        # Center window
+        width, height = 300, 100
+        x, y = self.master.winfo_x() + (self.master.winfo_width() // 2) - (width // 2), self.master.winfo_y() + (self.master.winfo_height() // 2) - (height // 2)
+        progress_win.geometry(f"{width}x{height}+{x}+{y}")
+        progress_win.deiconify()
 
         progress_label = tk.Label(progress_win, text="Préparation des images...", bg="#2E2E2E", fg="white", padx=20, pady=10)
         progress_label.pack()
         progress_bar = ttk.Progressbar(progress_win, orient=tk.HORIZONTAL, length=260, mode='determinate')
         progress_bar.pack(padx=20, pady=(0, 20))
-
-        # Move window to center
         progress_win.update_idletasks()
-        x, y = self.master.winfo_x() + (self.master.winfo_width() // 2) - (progress_win.winfo_width() // 2), self.master.winfo_y() + (self.master.winfo_height() // 2) - (progress_win.winfo_height() // 2)
-        progress_win.geometry(f"+{x}+{y}")
         
         try:
             pil_frames = [Image.fromarray(frame).convert("RGBA") for frame in self.gif_frames]
@@ -746,6 +755,23 @@ class GifEditorApp:
 
             if not final_frames:
                 raise ValueError("Aucune image à sauvegarder.")
+                
+            return final_frames, progress_win
+
+        except Exception as e:
+            if 'progress_win' in locals() and progress_win.winfo_exists():
+                progress_win.destroy()
+            messagebox.showerror("Erreur de Préparation", f"Une erreur est survenue: {e}")
+            return None, None
+
+    def export_as_gif(self):
+        final_frames, progress_win = self._prepare_frames_for_export("Export GIF en cours...")
+        if not final_frames: return
+
+        try:
+            # Retrieve progress widgets from the window
+            progress_label = progress_win.winfo_children()[0]
+            progress_bar = progress_win.winfo_children()[1]
 
             temp_dir = tempfile.gettempdir()
             temp_original_gif_path = os.path.join(temp_dir, f"temp_original_gif_{int(time.time())}.gif")
@@ -771,9 +797,65 @@ class GifEditorApp:
         except Exception as e:
             if 'progress_win' in locals() and progress_win.winfo_exists():
                 progress_win.destroy()
-            messagebox.showerror("Erreur de Sauvegarde", f"Une erreur est survenue: {e}")
+            messagebox.showerror("Erreur de Sauvegarde GIF", f"Une erreur est survenue: {e}")
             if 'temp_original_gif_path' in locals() and os.path.exists(temp_original_gif_path):
                 os.remove(temp_original_gif_path)
+
+    def export_as_webm(self):
+        final_frames, progress_win = self._prepare_frames_for_export("Export WebM en cours...")
+        if not final_frames: return
+
+        try:
+            # Retrieve progress widgets from the window
+            progress_label = progress_win.winfo_children()[0]
+            progress_bar = progress_win.winfo_children()[1]
+
+            # Construct WebM path (same location as original project if possible, or temp)
+            # Using temp for consistency with GIF flow, but we could save directly.
+            # Let's save to a temp file first to ensure success.
+            temp_dir = tempfile.gettempdir()
+            temp_webm_path = os.path.join(temp_dir, f"export_{int(time.time())}.webm")
+
+            progress_label.config(text="Sauvegarde du WebM...")
+            progress_bar['value'] = 0
+            progress_bar['maximum'] = len(final_frames) # imageio writes all at once usually for video, but let's try to show progress if possible or just indeterminate
+            progress_win.update_idletasks()
+
+            # Ensure dimensions are divisible by 2 for video encoding
+            first_frame = final_frames[0]
+            height, width, _ = first_frame.shape
+            new_width = width if width % 2 == 0 else width - 1
+            new_height = height if height % 2 == 0 else height - 1
+            
+            if new_width != width or new_height != height:
+                print(f"Resizing for WebM: {width}x{height} -> {new_width}x{new_height}")
+                resized_frames = []
+                for frame in final_frames:
+                    img = Image.fromarray(frame)
+                    img = img.resize((new_width, new_height), Image.LANCZOS)
+                    resized_frames.append(np.array(img))
+                final_frames = resized_frames
+
+            # Writing video might take time and doesn't easily support frame-by-frame callback with imageio.mimsave easily for progress bar without more complex setup.
+            # We will just use mimsave.
+            progress_bar.config(mode='indeterminate')
+            progress_bar.start()
+            
+            # Use libvpx-vp9 for better compression/quality, or libvpx. 
+            # pixelformat yuv420p is widely supported.
+            imageio.mimsave(temp_webm_path, final_frames, fps=FPS, format='WEBM', codec='libvpx', pixelformat='yuv420p')
+            
+            progress_win.destroy()
+            
+            copy_file_to_clipboard(temp_webm_path)
+            messagebox.showinfo("Succès", f"Fichier WebM sauvegardé et copié dans le presse-papier !\n\n{temp_webm_path}")
+
+        except Exception as e:
+            if 'progress_win' in locals() and progress_win.winfo_exists():
+                progress_win.destroy()
+            messagebox.showerror("Erreur de Sauvegarde WebM", f"Une erreur est survenue: {e}\n\nAssurez-vous d'avoir les codecs nécessaires (ffmpeg).")
+            if 'temp_webm_path' in locals() and os.path.exists(temp_webm_path):
+                os.remove(temp_webm_path)
 
     def _show_compression_dialog(self, original_size_mb, estimated_compressed_size_mb, final_frames, temp_original_gif_path):
         dialog = tk.Toplevel(self.master); dialog.title("Options de Sauvegarde GIF"); set_dark_title_bar(dialog); dialog.transient(self.master); dialog.grab_set()

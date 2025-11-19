@@ -1,0 +1,6 @@
+Gif Recorder !
+Une de mes plus belles applications.
+Ca fonctionne parfaitement.
+Ca permet de capturer une séquence vidéo courte , de lui ajouter des Annotations et de la publier sous forme de GIF aux copains !
+
+Status : Terminé

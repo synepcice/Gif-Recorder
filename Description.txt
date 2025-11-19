@@ -1,0 +1,163 @@
+# Project: Gif Recorder & Gif Editor
+
+This project provides a comprehensive suite for capturing short video sequences from the screen, annotating them, and publishing them as animated GIFs. It consists of two main applications: `gif_recorder.py` for screen capture and `gif_editor.py` for post-processing and annotation.
+
+## gif_recorder.py (Screen Recorder)
+
+This application runs in the background, typically in the system tray, and is responsible for continuously capturing screen content and triggering recordings based on user-defined rules or manual hotkeys.
+
+### Core Functionality:
+
+*   **Screen Capture:** Utilizes `dxcam` (DirectX Camera) for high-performance screen recording, capturing frames at a configurable frame rate (FPS, default 20).
+*   **Circular Buffer (Replay Capture):** Frames are stored in a `collections.deque` (a double-ended queue) with a maximum length determined by the `current_record_duration` (default 20 seconds). This allows the application to capture events that happened *before* a trigger, enabling "replay" functionality. The buffer size is configurable (5s, 20s, 60s), with an estimated RAM usage displayed.
+*   **Hotkey Trigger:** A global hotkey (default `shift+f12`) can be configured to manually trigger a capture.
+*   **Region Selection:** For manual captures, the user can select a specific rectangular region of the screen using a transparent overlay window (`RegionSelector`).
+*   **Project Saving:** Captured frames are saved as individual JPG images in a new timestamped folder (e.g., `YYYY-MM-DD_HH-MM-SS`) within a designated `GifRecorderProjects` directory (configurable by the user).
+*   **Gif Editor Integration:** After a manual capture, the application automatically opens the newly created project folder in the `gif_editor.py` application for further editing.
+*   **System Tray Integration:** Uses `pystray` to provide a system tray icon with a context menu for controlling the application (e.g., toggle shortcut window, open project gallery, configure Auto-Watch, set capture duration, choose monitor, exit).
+*   **Splash Screen:** Displays a splash screen on startup for a brief duration.
+*   **Configuration Management:** Loads and saves user preferences and settings (record duration, shortcut window position, projects path, selected monitor, capture mode, Auto-Watch rules) to `config.json`.
+*   **Notifications:** Displays transient on-screen notifications for user feedback (e.g., mode changes, application closed).
+*   **Dark Theme:** Attempts to apply a dark theme to Tkinter windows for a consistent look.
+
+### Auto-Watch Feature:
+
+This advanced feature allows for automated, rule-based screen capture, particularly useful for monitoring specific applications and capturing user interactions within them.
+
+*   **Process Monitoring:** Employs `psutil` to continuously monitor currently running processes on the system.
+*   **Rule-Based Triggering:** Users can define rules in the `AutoWatchConfigWindow` GUI. Each rule specifies:
+    *   **Executable:** The path to an application's executable (`.exe`) to monitor.
+    *   **Trigger:** A specific keyboard key (e.g., 'Q', 'Enter', 'Shift') or mouse click (e.g., 'Click Gauche', 'Click Droit') that, when pressed within the monitored application, initiates a capture.
+    *   **KPM (Keys Per Minute) Trigger:** Special trigger types like `[KPM > 70]`, `[KPM > 100]`, `[KPM > 200]`, `[KPM > 300]` allow triggering a capture if the user's input activity (keyboard/mouse events) exceeds a certain threshold within a short period.
+    *   **Cooldown:** A minimum time (in minutes) that must pass between captures for a given rule to prevent excessive recording.
+    *   **Capture Duration:** `before_seconds` and `after_seconds` define how many seconds of footage *before* and *after* the trigger event are included in the capture.
+*   **KPM Calculation:** Input events (keyboard presses, mouse clicks) are tracked over a 30-second rolling window. The KPM is calculated by extrapolating the number of events in this window to a full minute.
+*   **Trigger Logic:** When a monitored application is running and its associated trigger condition (key press, mouse click, or KPM threshold) is met, a capture is initiated.
+*   **GUI for Auto-Watch Configuration (`AutoWatchConfigWindow`):** A dedicated window allows users to add, remove, and edit Auto-Watch rules. It features a `ttk.Treeview` to display rules and `ttk.Combobox` for selecting triggers and cooldowns.
+*   **Prompt for Auto-Watch Activation:** When a monitored application is detected, the user is prompted to activate Auto-Watch mode.
+
+### GUI Elements (Shortcut Window):
+
+*   A small, draggable, always-on-top window that visually indicates the application's status.
+*   **Icon Display:** Shows different icons:
+    *   `eye.png` (O_O): Default "Replay" mode, not capturing.
+    *   `AW.png` (AW): Auto-Watch mode, not actively capturing.
+    *   `REC.png` (REC): Actively capturing (either manual or Auto-Watch).
+*   **KPM Overlay:** When in Auto-Watch mode with a KPM trigger, the current KPM value is displayed as bold white text, overlaid on top of the base icon (AW or REC), providing real-time feedback on input activity. The font size of the KPM counter is adjusted for better visibility.
+
+### Dependencies (Key Libraries):
+
+*   `customtkinter` (for GUI styling, though `tkinter` and `ttk` are directly used).
+*   `Pillow` (PIL) for image manipulation.
+*   `pystray` for system tray integration.
+*   `pyperclip` for clipboard operations.
+*   `pynput` for robust global keyboard and mouse event monitoring.
+*   `pywin32` for Windows-specific API interactions.
+*   `dxcam` for high-performance screen capture.
+*   `imageio` for reading/writing image data (JPG frames).
+*   `numpy` for numerical operations, especially with image arrays.
+*   `psutil` for process monitoring.
+
+### Current Status & Recent Fixes:
+
+*   **Input System Rework:** The global input monitoring system has been completely refactored, replacing the separate `keyboard` and `mouse` libraries with the more robust `pynput` library. This resolves a conflict that prevented mouse clicks from being registered.
+*   **KPM Calculation Fix:** The Keys Per Minute (KPM) calculation now correctly includes both keyboard presses and mouse clicks, making the feature more accurate and reliable.
+*   **New KPM Trigger:** Added a new, more accessible `[KPM > 70]` trigger option for Auto-Watch rules.
+*   The KPM counter remains displayed as an overlay on the shortcut window's icon for real-time feedback.
+
+## gif_editor.py (Gif Editor)
+
+This application provides a graphical interface for editing and annotating the captured frame sequences, ultimately exporting them as animated GIFs.
+
+### Core Functionality:
+
+*   **Project Loading:** Can load a `.gif` file directly or a project folder containing `.jpg` frames (as created by `gif_recorder.py`). It can receive paths via command-line arguments or from the Windows clipboard.
+*   **Frame Navigation:** A slider allows users to easily scrub through and view individual frames of the loaded sequence.
+*   **Annotation Tools:**
+    *   **Pencil Tool:** Allows freehand drawing on frames with a user-selected color and adjustable line width.
+    *   **Text Tool:** Enables adding text overlays to frames. Users can choose the text color and font size.
+    *   **Color Picker:** A simple dialog to select annotation colors.
+    *   **Font Size Picker:** A dialog to set the font size for text annotations.
+*   **Editing Tools:**
+    *   **Crop Tool:** Allows defining a rectangular region to crop all frames in the sequence, effectively changing the GIF's dimensions.
+    *   **Duplicate Frame:** Inserts a copy of the current frame immediately after it.
+    *   **Delete Frame:** Removes the current frame from the sequence.
+    *   **Trim Frames:** Functions to delete a configurable number of frames (default 3) from either the beginning or the end of the sequence.
+    *   **Slow-motion Effect:** Applies a slow-motion effect around the current frame by intelligently duplicating frames, creating a pyramid-like distribution of repetitions.
+*   **Undo/Redo:** Basic undo and redo functionality for annotation and editing actions.
+*   **Saving and Exporting:**
+    *   The "Validate changes" button processes all frames, applies all annotations and edits, and then initiates the GIF export process.
+    *   **Compression Options:** Presents a dialog offering to save the GIF at its original size or a compressed version.
+    *   **Compression Details:** The compressed version reduces the frame rate (e.g., to 15 FPS) and resizes the frames (e.g., to 90% of original dimensions) to reduce file size.
+    *   **WebM Export:** A dedicated "WebM" button allows exporting the sequence as a `.webm` video file. This format is typically much lighter than GIF.
+    *   **WebM Details:** Uses the `libvpx` codec and `yuv420p` pixel format for broad compatibility. Automatically resizes frames to even dimensions (required by the codec).
+    *   **Clipboard Copy:** The path to the final saved file (GIF or WebM) is automatically copied to the Windows clipboard.
+*   **UI/UX:**
+    *   Uses `tkinter` and `ttk` widgets, with tooltips for buttons.
+    *   Attempts to apply a dark theme.
+    *   Handles `sys._MEIPASS` for PyInstaller bundled applications.
+
+### Overall Project Workflow:
+
+1.  The user runs `gif_recorder.py` which sits in the system tray.
+2.  The user either manually triggers a capture with a hotkey (and selects a region) or an Auto-Watch rule triggers a capture when a monitored application is active and a condition is met.
+3.  `gif_recorder.py` saves the captured frames as a project folder (sequence of JPGs).
+4.  `gif_recorder.py` then launches `gif_editor.py` with the path to this new project folder.
+5.  In `gif_editor.py`, the user can review, annotate, and edit the frames.
+6.  Finally, the user "validates changes" in `gif_editor.py` to export the edited sequence as a GIF, with options for compression. The path to the final GIF is copied to the clipboard for easy sharing.
+
+## Recent Compilation Fixes (November 2025):
+
+### Issue 1: Missing Icons in Compiled Executable
+*   **Problem:** After compilation with PyInstaller, the visual overlay icon (`eye.png`) and Auto-Watch icons (`Icons/AW.png`, `Icons/REC.png`) were missing from the executable.
+*   **Solution:** Updated `gif_recorder.spec` to include `eye.png` and the `Icons` folder in the `datas` list:
+    ```python
+    datas=[('icon.ico', '.'), ('SplashScreen.png', '.'), ('eye.png', '.'), ('Icons', 'Icons')]
+    ```
+
+### Issue 2: ModuleNotFoundError: No module named 'PIL'
+*   **Problem:** The compiled executable failed to launch with `ModuleNotFoundError: No module named 'PIL'`.
+*   **Root Cause:** The build environment was missing the actual dependencies (Pillow and others from `requirements.txt`).
+*   **Solution:** 
+    1. Installed all dependencies: `pip install -r requirements.txt`
+    2. Added PIL modules to `hiddenimports` in both spec files:
+    ```python
+    hiddenimports=['PIL', 'PIL.Image', 'PIL.ImageTk', 'PIL.ImageDraw', 'PIL.ImageFont']
+    ```
+
+### Issue 3: PackageNotFoundError: No package metadata was found for imageio
+*   **Problem:** Runtime error when trying to use imageio functionality.
+*   **Solution:** Added `copy_metadata('imageio')` to the `datas` list in both spec files to ensure imageio's metadata is bundled with the executable.
+
+### Issue 4: Could not find a backend to open .webm (WebM Export)
+*   **Problem:** WebM export failed with "Could not find a backend to open" error, suggesting missing ffmpeg support.
+*   **Solution:**
+    1. Installed `imageio[ffmpeg]` to get the ffmpeg backend: `pip install imageio[ffmpeg]`
+    2. Updated both spec files to:
+        - Locate and bundle the ffmpeg executable from `imageio_ffmpeg/binaries/`
+        - Add `copy_metadata('imageio-ffmpeg')` to ensure proper metadata
+    3. Added code to both spec files to dynamically find and include ffmpeg binaries:
+    ```python
+    from PyInstaller.utils.hooks import copy_metadata, collect_data_files
+    import os
+
+    # Get imageio-ffmpeg binaries
+    imageio_ffmpeg_binaries = []
+    try:
+        import imageio_ffmpeg
+        ffmpeg_dir = os.path.dirname(imageio_ffmpeg.get_ffmpeg_exe())
+        for file in os.listdir(ffmpeg_dir):
+            if file.endswith('.exe'):
+                imageio_ffmpeg_binaries.append((os.path.join(ffmpeg_dir, file), 'imageio_ffmpeg/binaries'))
+    except:
+        pass
+    ```
+
+### Build Configuration Summary:
+*   Both `gif_recorder.spec` and `gif_editor.spec` now properly bundle:
+    - All required icons and assets
+    - PIL/Pillow modules
+    - imageio and imageio-ffmpeg with metadata
+    - ffmpeg executable for WebM export support
+*   All runtime dependencies are correctly included in the final executables.
+
